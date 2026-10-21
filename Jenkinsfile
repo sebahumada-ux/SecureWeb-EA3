@@ -20,5 +20,23 @@ pipeline {
                 }
             }
         }
+
+        stage('Dependency-Check') {
+            steps {
+                dependencyCheck(
+                    odcInstallation: 'Dependency-Check',
+                    additionalArguments: '--scan . --format ALL --out . --enableExperimental'
+                )
+            }
+        }
+    }
+
+    post {
+        always {
+            dependencyCheckPublisher(
+                pattern: '**/dependency-check-report.xml',
+                skipNoReportFiles: true
+            )
+        }
     }
 }
