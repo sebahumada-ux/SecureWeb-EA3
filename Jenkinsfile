@@ -25,6 +25,7 @@ pipeline {
             steps {
                 dependencyCheck(
                     odcInstallation: 'Dependency-Check',
+                    nvdCredentialsId: 'nvd-api-key-ea3',
                     additionalArguments: '--scan . --format ALL --out . --enableExperimental'
                 )
             }
