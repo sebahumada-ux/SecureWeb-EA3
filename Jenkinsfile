@@ -9,6 +9,24 @@ pipeline {
             }
         }
 
+        stage('Build') {
+            steps {
+                sh '''
+                    set -e
+                    python3 -m venv "$WORKSPACE@tmp/secureweb-venv"
+                    "$WORKSPACE@tmp/secureweb-venv/bin/python" -m pip install --disable-pip-version-check -r requirements.txt pytest
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh '''
+                    "$WORKSPACE@tmp/secureweb-venv/bin/python" -m pytest -q tests
+                '''
+            }
+        }
+
         stage('Analyze - SonarQube') {
             steps {
                 script {
