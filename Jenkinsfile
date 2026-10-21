@@ -5,8 +5,19 @@ pipeline {
     stages {
         stage('Verificar repositorio') {
             steps {
-                echo 'Repositorio SecureWeb-EA3 conectado'
                 sh 'ls -la'
+            }
+        }
+
+        stage('Analyze - SonarQube') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarQube-Scanner'
+
+                    withSonarQubeEnv('SonarQube-EA3') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
             }
         }
     }
