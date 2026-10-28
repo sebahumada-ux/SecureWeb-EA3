@@ -13,6 +13,12 @@ pipeline {
             defaultValue: false,
             description: 'Activar SonarQube solo si su contenedor esta encendido'
         )
+
+        booleanParam(
+            name: 'PROBAR_NOTIFICACION_ALERTA',
+            defaultValue: false,
+            description: 'Simula estado UNSTABLE para probar Mailpit sin introducir vulnerabilidades'
+        )
     }
 
     environment {
@@ -113,6 +119,9 @@ pipeline {
                         error('No se pudo completar la auditoria de dependencias')
                     } else {
                         echo 'Auditoria: sin vulnerabilidades conocidas detectadas por pip-audit.'
+                        if (params.PROBAR_NOTIFICACION_ALERTA) {
+                            unstable('SIMULACION DE ALERTA: estado UNSTABLE para probar la notificacion, sin vulnerabilidades reales.')
+                        }
                     }
                 }
             }
@@ -163,15 +172,46 @@ pipeline {
         }
 
         unstable {
-            echo 'ALERTA: pipeline inestable. Revisar informe de vulnerabilidades y registros de Jenkins.'
+            echo 'ALERTA: pipeline inestable. Revisar auditoria o simulacion en los registros.'
+            mail(
+                to: 'prueba@example.test',
+                subject: "[EA 3.3.2] ALERTA UNSTABLE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Jenkins registro un resultado UNSTABLE.
+Puede ser por vulnerabilidades conocidas o por la simulacion de aviso de prueba.
+Revisa Console Output y el archivo auditoria-dependencias.json.
+Trabajo: ${env.JOB_NAME}
+Ejecucion: #${env.BUILD_NUMBER}
+Detalle: ${env.BUILD_URL}
+"""
+            )
         }
 
         failure {
             echo 'ALERTA: fallo el pipeline. Revisar Console Output para corregir el problema.'
+            mail(
+                to: 'prueba@example.test',
+                subject: "[EA 3.3.2] ERROR FAILURE - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """El pipeline Jenkins fallo.
+Trabajo: ${env.JOB_NAME}
+Ejecucion: #${env.BUILD_NUMBER}
+Revisa los errores en: ${env.BUILD_URL}
+"""
+            )
         }
 
         success {
             echo 'Pipeline EA 3.3.2 finalizado correctamente.'
+            mail(
+                to: 'prueba@example.test',
+                subject: "[EA 3.3.2] SUCCESS - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """Pipeline completado correctamente.
+Build, Test, Analyze, Dependency Management y Deploy finalizaron sin errores.
+La auditoria no encontro vulnerabilidades conocidas.
+Trabajo: ${env.JOB_NAME}
+Ejecucion: #${env.BUILD_NUMBER}
+Detalle: ${env.BUILD_URL}
+"""
+            )
         }
     }
 }
