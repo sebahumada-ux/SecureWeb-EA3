@@ -1,0 +1,2 @@
+# Dependencia de monitorizacion fijada para reproducibilidad.
+prometheus-client==0.26.0
