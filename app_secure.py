@@ -12,7 +12,9 @@ def security_headers(response):
         "default-src 'self'; "
         "script-src 'self'; "
         "object-src 'none'; "
-        "frame-ancestors 'none'"
+        "frame-ancestors 'none'; "
+        "form-action 'self'; "
+        "base-uri 'self'"
     )
     return response
 
